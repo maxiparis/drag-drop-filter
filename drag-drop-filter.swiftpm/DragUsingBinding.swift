@@ -1,10 +1,15 @@
+//
+//  SwiftUIView.swift
+//  drag-drop-filter
+//
+//  Created by Max Paris on 2/18/25.
+//
+
 import SwiftUI
 
-enum DropTypes: String {
-    case rectangle, circle
-}
-
-struct ContentView: View {
+struct DragUsingBinding: View {
+    @State var elementDraggedId: String? = nil
+    
     var body: some View {
         VStack {
             
@@ -20,7 +25,7 @@ struct ContentView: View {
                         .padding()
                         .background(.black)
                         .cornerRadius(15)
-                        .onDrop(of: ["public.text"], delegate: FiguresDropDelegate(dropType: .circle))
+                        .onDrop(of: ["public.text"], delegate: FiguresBindingDropDelegate(dropType: .circle, elementDraggedID: $elementDraggedId))
                 }
                 Spacer()
                 VStack {
@@ -31,7 +36,7 @@ struct ContentView: View {
                         .padding()
                         .background(.black)
                         .cornerRadius(15)
-                        .onDrop(of: ["public.text"], delegate: FiguresDropDelegate(dropType: .rectangle))
+                        .onDrop(of: ["public.text"], delegate: FiguresBindingDropDelegate(dropType: .rectangle, elementDraggedID: $elementDraggedId))
                 }
                 Spacer()
             }
@@ -46,11 +51,8 @@ struct ContentView: View {
                     .frame(width: 100, height: 100)
                     .contentShape([.dragPreview], Circle())
                     .onDrag {
-//                        NSItem
-//                        NSItemProvider(item: nil, typeIdentifier: "public.url")
-//                        NSItemProvider(object: "circle" as NSString)
-                        let url = URL(string: "circle")
-                        return NSItemProvider(object: url! as NSURL)
+                        elementDraggedId = DropTypes.circle.rawValue
+                        return NSItemProvider(object: DropTypes.circle.rawValue as NSString)
                     }
                 
                 Spacer()
@@ -60,7 +62,8 @@ struct ContentView: View {
                     .frame(width: 100, height: 100)
                     .contentShape([.dragPreview], Rectangle())
                     .onDrag {
-                        NSItemProvider(object: "rectangle" as NSString)
+                        elementDraggedId = DropTypes.rectangle.rawValue
+                        return NSItemProvider(object: DropTypes.rectangle.rawValue as NSString)
                     }
                 
                 Spacer()
@@ -70,10 +73,12 @@ struct ContentView: View {
     }
 }
 
-class FiguresDropDelegate: DropDelegate {
-    
-    init(dropType: DropTypes) {
+class FiguresBindingDropDelegate: DropDelegate {
+    @Binding var elementDraggedId: String?
+
+    init(dropType: DropTypes, elementDraggedID: Binding<String?>) {
         self.dropType = dropType
+        self._elementDraggedId = elementDraggedID
     }
     
     var dropType: DropTypes
@@ -96,6 +101,14 @@ class FiguresDropDelegate: DropDelegate {
         return droppedElementMatchesType
     }
     
+    func dropEntered(info: DropInfo) {
+        print("on dropEntered")
+        
+        //TODO: do something here to avoid
+        guard elementDraggedId != nil, dropType.rawValue == elementDraggedId! else { return }
+        
+        print("performing move actions")
+    }
     
     func dropUpdated(info: DropInfo) -> DropProposal? {
         return DropProposal(operation: .move)
