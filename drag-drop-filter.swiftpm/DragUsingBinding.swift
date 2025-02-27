@@ -105,9 +105,12 @@ class FiguresBindingDropDelegate: DropDelegate {
         print("on dropEntered")
         
         //TODO: do something here to avoid
-        guard elementDraggedId != nil, dropType.rawValue == elementDraggedId! else { return }
+        guard elementDraggedId != nil, dropType.rawValue == elementDraggedId! else {
+            print("❌not same type")
+            return
+        }
         
-        print("performing move actions")
+        print("✅performing move actions")
     }
     
     func dropUpdated(info: DropInfo) -> DropProposal? {
